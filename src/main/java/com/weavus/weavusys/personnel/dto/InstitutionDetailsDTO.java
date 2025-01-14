@@ -1,4 +1,4 @@
-package com.weavusys.personnel.dto;
+package com.weavus.weavusys.personnel.dto;
 
 import lombok.Data;
 
@@ -9,5 +9,5 @@ public class InstitutionDetailsDTO {
     private String name;
     private String contactInfo;
     private List<String> applicantNames;
-    private List<String> schedules; // 일정 리스트
+    private List<ScheduleDTO> schedules; // 일정 리스트
 }

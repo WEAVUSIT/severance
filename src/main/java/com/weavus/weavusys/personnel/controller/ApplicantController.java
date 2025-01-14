@@ -1,10 +1,8 @@
-package com.weavusys.personnel.controller;
+package com.weavus.weavusys.personnel.controller;
 
 
-import com.weavusys.personnel.dto.ApplicantDTO;
-import com.weavusys.personnel.dto.InstitutionDetailsDTO;
-import com.weavusys.personnel.entity.Applicant;
-import com.weavusys.personnel.service.ApplicantService;
+import com.weavus.weavusys.personnel.dto.ApplicantDTO;
+import com.weavus.weavusys.personnel.service.ApplicantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,12 +25,12 @@ public class ApplicantController {
     }
 
     @PostMapping("/applicant/add")
-    public Applicant addApplicant(@RequestBody ApplicantDTO applicantDTO) {
-        return applicantService.addApplicant(applicantDTO);
+    public String addApplicant(@RequestBody ApplicantDTO applicantDTO, @RequestParam Long institutionId) {
+        return applicantService.addApplicant(applicantDTO, institutionId);
     }
 
     @PutMapping("/applicant/{id}")
-    public Applicant updateApplicant(@PathVariable Long id, @RequestBody ApplicantDTO applicantDTO) {
+    public String updateApplicant(@PathVariable Long id, @RequestBody ApplicantDTO applicantDTO) {
         return applicantService.updateApplicant(id, applicantDTO);
     }
 }

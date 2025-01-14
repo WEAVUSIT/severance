@@ -1,4 +1,4 @@
-package com.weavusys.personnel;
+package com.weavus.weavusys;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
