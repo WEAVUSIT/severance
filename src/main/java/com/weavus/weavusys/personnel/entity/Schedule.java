@@ -1,5 +1,6 @@
 package com.weavus.weavusys.personnel.entity;
 
+import com.weavus.weavusys.enums.ScheduleType;
 import com.weavus.weavusys.personnel.dto.ScheduleDTO;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -23,6 +24,11 @@ public class Schedule {
     @Column(nullable = false)
     private LocalDateTime endDateTime;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    //어떤 스케줄인지 이넘으로 만들기 예 - 면접, 기업, 교육, 이벤트, 기타, 회계
+    private ScheduleType scheduleType;
+
     //어느 기관의 스케쥴인지 조인
     @ManyToOne
     @JoinColumn(name = "institution_id", nullable = false)
@@ -34,6 +40,7 @@ public class Schedule {
         schedule.setScheduleInfo(scheduleDTO.getScheduleInfo());
         schedule.setStartDateTime(scheduleDTO.getStartDateTime());
         schedule.setEndDateTime(scheduleDTO.getEndDateTime());
+        schedule.setScheduleType(ScheduleType.fromValue(scheduleDTO.getScheduleType()));
         schedule.setInstitution(institution);
         return schedule;
     }

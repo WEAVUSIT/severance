@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 @Data
 public class ApplicantDTO {  //대소문자 확인하기
+    private Long id;
     private String name;
     private LocalDate joiningDate;
     private int admissionStatus;
@@ -16,13 +17,14 @@ public class ApplicantDTO {  //대소문자 확인하기
 
     public static ApplicantDTO toDTO(Applicant applicant) {
         ApplicantDTO dto = new ApplicantDTO();
+        dto.setId(applicant.getId());
         dto.setName(applicant.getName());
         dto.setJoiningDate(applicant.getJoiningDate());
         dto.setVisaApplicationDate(applicant.getVisaApplicationDate());
         dto.setAdmissionStatus(applicant.getAdmissionStatus().getValue());
         dto.setOfferStatus(applicant.getOfferStatus().getValue());
         dto.setVisaStatus(applicant.getVisaStatus().getValue());
-
+        dto.setInstitutionId(applicant.getInstitution().getId());
         return dto;
     }
 }

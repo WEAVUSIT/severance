@@ -33,9 +33,13 @@ public class ApplicantService {
         return ApplicantDTO.toDTO(applicant);
     }
 
-    public String addApplicant(ApplicantDTO applicantDTO, Long institutionId) {
+    public String addApplicant(ApplicantDTO applicantDTO) {
+        Institution institution = institutionRepository.findById(applicantDTO.getInstitutionId())
+                .orElseThrow(
+                () -> new IllegalArgumentException("Institution with id " + applicantDTO.getInstitutionId() + " not found")
+        );
 
-        applicantRepository.save(Applicant.fromDTO(applicantDTO, institutionId));
+        applicantRepository.save(Applicant.fromDTO(applicantDTO, institution));
         return "Applicant added successfully";
     }
 
@@ -49,5 +53,10 @@ public class ApplicantService {
         applicant.setInstitution(institutionRepository.findById(applicantDTO.getInstitutionId()).orElseThrow());
         applicantRepository.save(applicant);
         return "Applicant updated successfully";
+    }
+
+    public String deleteApplicant(Long id) {
+        applicantRepository.deleteById(id);
+        return "Applicant deleted successfully";
     }
 }

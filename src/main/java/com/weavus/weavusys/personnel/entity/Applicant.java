@@ -7,6 +7,7 @@ import com.weavus.weavusys.personnel.dto.ApplicantDTO;
 import com.weavus.weavusys.personnel.repository.InstitutionRepository;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 
@@ -15,9 +16,8 @@ import java.time.LocalDate;
     @NoArgsConstructor
     @Builder
     @AllArgsConstructor
-    @RequiredArgsConstructor
     public class Applicant {
-        private static InstitutionRepository institutionRepository;
+
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
@@ -36,10 +36,7 @@ import java.time.LocalDate;
         @JoinColumn(name = "institution_id", nullable = false)
         private Institution institution; // 소속 교육기관 조인
 
-        public static Applicant fromDTO(ApplicantDTO applicantDTO, Long institutionId) {
-            Institution institution = institutionRepository.findById(institutionId)
-                    .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
-
+        public static Applicant fromDTO(ApplicantDTO applicantDTO, Institution institution) {
             Applicant applicant = new Applicant();
             applicant.setName(applicantDTO.getName());
             applicant.setJoiningDate(applicantDTO.getJoiningDate());

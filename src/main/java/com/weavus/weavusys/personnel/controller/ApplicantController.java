@@ -25,12 +25,18 @@ public class ApplicantController {
     }
 
     @PostMapping("/applicant/add")
-    public String addApplicant(@RequestBody ApplicantDTO applicantDTO, @RequestParam Long institutionId) {
-        return applicantService.addApplicant(applicantDTO, institutionId);
+    public String addApplicant(@RequestBody ApplicantDTO applicantDTO) {
+        return applicantService.addApplicant(applicantDTO);
     }
 
     @PutMapping("/applicant/{id}")
     public String updateApplicant(@PathVariable Long id, @RequestBody ApplicantDTO applicantDTO) {
         return applicantService.updateApplicant(id, applicantDTO);
+    }
+
+    //지원자 삭제
+    @DeleteMapping("/applicant/{id}")
+    public String deleteApplicant(@PathVariable Long id) {
+        return applicantService.deleteApplicant(id);
     }
 }

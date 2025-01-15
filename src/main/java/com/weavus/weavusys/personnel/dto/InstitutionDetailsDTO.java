@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class InstitutionDetailsDTO {
+    private Long id;
     private String name;
     private String contactInfo;
     private List<String> applicantNames;

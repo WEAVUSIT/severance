@@ -8,11 +8,14 @@ import java.time.LocalDateTime;
 
 @Data
 public class ScheduleDTO {
+
+    private Long id;
     private String name;
     private String scheduleInfo;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
     private Long institutionId;
+    private int scheduleType;
 
     public static ScheduleDTO ToScheduleDTO(Schedule schedule) {
 
@@ -22,6 +25,7 @@ public class ScheduleDTO {
         dto.setStartDateTime(schedule.getStartDateTime());
         dto.setEndDateTime(schedule.getEndDateTime());
         dto.setInstitutionId(schedule.getInstitution().getId());
+        dto.setScheduleType(schedule.getScheduleType().getValue());
         return dto;
     }
 }
