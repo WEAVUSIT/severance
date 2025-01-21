@@ -25,6 +25,7 @@ import java.time.LocalDate;
         @Column(nullable = false)
         private String name;  //이름(영어 or 가타카나)
         @Column(nullable = false)
+
         @Enumerated(EnumType.ORDINAL)
         private Gender gender; //성별
         private String email; //이메일
@@ -60,17 +61,31 @@ import java.time.LocalDate;
         private String resumeFileName3;  // 세 번째 이력서 파일 이름
 
         public static Applicant fromDTO(ApplicantDTO applicantDTO, Institution institution) {
+            Gender gender = Gender.fromDisplayName(applicantDTO.getGender());
+
             Applicant applicant = new Applicant();
             applicant.setName(applicantDTO.getName());
-            applicant.setGender(Gender.valueOf(applicantDTO.getGender()));
+            applicant.setGender(gender);
             applicant.setEmail(applicantDTO.getEmail());
             applicant.setBirthDate(applicantDTO.getBirthDate());
             applicant.setPhoneNumber(applicantDTO.getPhoneNumber());
             applicant.setJoiningDate(applicantDTO.getJoiningDate());
-            applicant.setAdmissionStatus(AdmissionStatus.fromValue(applicantDTO.getAdmissionStatus()));
-            applicant.setVisaStatus(VisaStatus.fromValue(applicantDTO.getVisaStatus()));
+
+            if(applicantDTO.getAdmissionStatus() == null ) {
+                applicant.setAdmissionStatus(AdmissionStatus.valueOf("지원중"));
+            } else {
+                applicant.setAdmissionStatus(AdmissionStatus.valueOf(applicantDTO.getAdmissionStatus()));
+            }
+
+            if(applicantDTO.getVisaStatus() == null) {
+                applicant.setVisaStatus(VisaStatus.valueOf("대기중"));
+            } else {
+                applicant.setVisaStatus(VisaStatus.valueOf(applicantDTO.getVisaStatus()));
+            }
+
             applicant.setVisaApplicationDate(applicantDTO.getVisaApplicationDate());
             applicant.setInstitution(institution);
+
             applicant.setResume1(applicantDTO.getResume1());
             applicant.setResumeFileName1(applicantDTO.getResumeFileName1());
             applicant.setResume2(applicantDTO.getResume2());

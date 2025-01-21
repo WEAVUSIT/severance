@@ -1,6 +1,7 @@
 package com.weavus.weavusys.personnel.service;
 
 import com.weavus.weavusys.enums.AdmissionStatus;
+import com.weavus.weavusys.enums.Gender;
 import com.weavus.weavusys.enums.VisaStatus;
 import com.weavus.weavusys.personnel.dto.ApplicantDTO;
 import com.weavus.weavusys.personnel.entity.Applicant;
@@ -8,9 +9,17 @@ import com.weavus.weavusys.personnel.entity.Institution;
 import com.weavus.weavusys.personnel.repository.ApplicantRepository;
 import com.weavus.weavusys.personnel.repository.InstitutionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,19 +46,39 @@ public class ApplicantService {
                 .orElseThrow(
                 () -> new IllegalArgumentException("Institution with id " + applicantDTO.getInstitutionId() + " not found")
         );
-        applicantRepository.save(Applicant.fromDTO(applicantDTO, institution));
+
+        Applicant applicant = Applicant.fromDTO(applicantDTO, institution);
+
+        applicantRepository.save(applicant);
         return "Applicant added successfully";
     }
 
-    public String updateApplicant(Long id, ApplicantDTO applicantDTO) {
-        Applicant applicant = applicantRepository.findById(id).orElseThrow();
-        applicant.setName(applicantDTO.getName());
-        applicant.setJoiningDate(applicantDTO.getJoiningDate());
-        applicant.setAdmissionStatus(AdmissionStatus.fromValue(applicantDTO.getAdmissionStatus()));
-        applicant.setVisaStatus(VisaStatus.fromValue(applicantDTO.getVisaStatus()));
-        applicant.setInstitution(institutionRepository.findById(applicantDTO.getInstitution().getId()).orElseThrow());
-        applicantRepository.save(applicant);
-        return "Applicant updated successfully";
+    @Transactional
+    public Applicant updateApplicant(Long id, ApplicantDTO applicantDTO) {
+
+        Optional<Applicant> applicantUp= applicantRepository.findById(id);
+        if(applicantUp.isPresent()) {
+            Gender gender = Gender.fromDisplayName(applicantDTO.getGender());
+
+            Applicant applicant = applicantUp.get();
+            applicant.setName(applicantDTO.getName());
+            applicant.setGender(gender);
+            applicant.setEmail(applicantDTO.getEmail());
+            applicant.setBirthDate(applicantDTO.getBirthDate());
+            applicant.setPhoneNumber(applicantDTO.getPhoneNumber());
+            applicant.setJoiningDate(applicantDTO.getJoiningDate());
+            applicant.setAdmissionStatus(AdmissionStatus.valueOf(applicantDTO.getAdmissionStatus()));
+            applicant.setVisaApplicationDate(applicantDTO.getVisaApplicationDate());
+            applicant.setVisaStatus(VisaStatus.valueOf(applicantDTO.getVisaStatus()));
+            applicant.setInstitution(institutionRepository.findById(applicantDTO.getInstitution().getId()).orElse(null));
+
+            //만약 AdmissionStatus가 변경되었다면 statusDate를 현재 날짜로 업데이트
+            if (!applicant.getAdmissionStatus().equals(applicantDTO.getAdmissionStatus())) {
+                applicant.setStatusDate(LocalDate.now());
+            }
+            return applicantRepository.save(applicant);
+        }
+        return null;
     }
 
     public String deleteApplicant(Long id) {
@@ -57,37 +86,68 @@ public class ApplicantService {
         return "Applicant deleted successfully";
     }
 //파일다운로드 제작중
-//    public String uploadResume(Long id, MultipartFile multipartFile) {
-//        Applicant applicant = applicantRepository.findById(id).orElseThrow();
-//
-//
-//        try {
-//            applicant.setResume(multipartFile.getBytes());
-//            applicant.setResumeFileName(multipartFile.getOriginalFilename());
-//            applicantRepository.save(applicant);
-//            return "Resume uploaded successfully";
-//        } catch (Exception e) {
-//            throw new RuntimeException("Failed to upload resume: " + e.getMessage());
-//        }
-//
-//    }
-//
-//    public ResponseEntity<Resource> downloadResume(Long id) {
-//        Applicant applicant = applicantRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Applicant not found"));
-//
-//        byte[] resumeData = applicant.getResume();
-//        if (resumeData == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        ByteArrayResource resource = new ByteArrayResource(resumeData);
-//
-//        String fileName = "resume_" + id + ".pdf"; // 파일명을 동적으로 설정
-//
-//        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-//                .body((Resource) resource);
-//    }
+    public String uploadResume(Long id, MultipartFile multipartFile, int resumeNumber) {
+        Applicant applicant = applicantRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Applicant not found")
+        );
+
+        try {
+            switch (resumeNumber) {
+                case 1:
+                    applicant.setResume1(multipartFile.getBytes());
+                    applicant.setResumeFileName1(multipartFile.getOriginalFilename());
+                    break;
+                case 2:
+                    applicant.setResume2(multipartFile.getBytes());
+                    applicant.setResumeFileName2(multipartFile.getOriginalFilename());
+                    break;
+                case 3:
+                    applicant.setResume3(multipartFile.getBytes());
+                    applicant.setResumeFileName3(multipartFile.getOriginalFilename());
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid resume number");
+            }
+            return "Resume uploaded successfully";
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload resume: " + e.getMessage());
+        }
+
+    }
+
+    public ResponseEntity<ByteArrayResource> downloadResume(Long id, int resumeNumber) {
+        Applicant applicant = applicantRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Applicant not found"));
+
+        byte[] resumeData;
+        String fileName;
+
+        switch (resumeNumber) {
+            case 1:
+                resumeData = applicant.getResume1();
+                fileName = applicant.getResumeFileName1();
+                break;
+            case 2:
+                resumeData = applicant.getResume2();
+                fileName = applicant.getResumeFileName2();
+                break;
+            case 3:
+                resumeData = applicant.getResume3();
+                fileName = applicant.getResumeFileName3();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid resume number");
+        }
+
+        if (resumeData == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+            ByteArrayResource resource = new ByteArrayResource(resumeData);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+    }
 }
