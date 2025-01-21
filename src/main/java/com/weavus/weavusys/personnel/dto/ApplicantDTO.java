@@ -53,6 +53,7 @@ public class ApplicantDTO {  //대소문자 확인하기
         dto.setAdmissionStatus(applicant.getAdmissionStatus().name());
         dto.setVisaStatus(applicant.getVisaStatus().name());
         dto.setInstitution(applicant.getInstitution());
+        dto.setInstitutionId(applicant.getInstitution().getId());
         dto.setStatusDate(daysElapsed);
         dto.setResume1(applicant.getResume1());
         dto.setResumeFileName1(applicant.getResumeFileName1());

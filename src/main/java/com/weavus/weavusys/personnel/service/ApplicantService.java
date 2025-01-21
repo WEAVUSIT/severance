@@ -70,8 +70,12 @@ public class ApplicantService {
             applicant.setAdmissionStatus(AdmissionStatus.valueOf(applicantDTO.getAdmissionStatus()));
             applicant.setVisaApplicationDate(applicantDTO.getVisaApplicationDate());
             applicant.setVisaStatus(VisaStatus.valueOf(applicantDTO.getVisaStatus()));
-            applicant.setInstitution(institutionRepository.findById(applicantDTO.getInstitution().getId()).orElse(null));
-
+            Institution newInstitution = institutionRepository.findById(applicantDTO.getInstitutionId()).orElse(null);
+            if(newInstitution != null) {
+                applicant.setInstitution(newInstitution);
+            } else {
+                throw new IllegalArgumentException("Institution with id " + applicantDTO.getInstitution().getId() + " not found");
+            }
             //만약 AdmissionStatus가 변경되었다면 statusDate를 현재 날짜로 업데이트
             if (!applicant.getAdmissionStatus().equals(applicantDTO.getAdmissionStatus())) {
                 applicant.setStatusDate(LocalDate.now());
