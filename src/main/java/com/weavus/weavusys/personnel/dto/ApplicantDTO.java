@@ -2,12 +2,15 @@ package com.weavus.weavusys.personnel.dto;
 
 import com.weavus.weavusys.personnel.entity.Applicant;
 import com.weavus.weavusys.personnel.entity.Institution;
+import com.weavus.weavusys.personnel.service.ApplicantService;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 @Data
+@RequiredArgsConstructor
 public class ApplicantDTO {  //대소문자 확인하기
 
     private Long id;
@@ -23,11 +26,13 @@ public class ApplicantDTO {  //대소문자 확인하기
     private Institution institution;
     private Long institutionId;
     private Long statusDate;
-    private byte[] resume1;
+
+    //이력서 파일 저장
+    private String resume1Path;
     private String resumeFileName1;
-    private byte[] resume2;
+    private String resume2Path;
     private String resumeFileName2;
-    private byte[] resume3;
+    private String resume3Path;
     private String resumeFileName3;
 
     public static ApplicantDTO toDTO(Applicant applicant) {
@@ -39,6 +44,26 @@ public class ApplicantDTO {  //대소문자 확인하기
             daysElapsed = ChronoUnit.DAYS.between(applicant.getJoiningDate(), LocalDate.now());
         }else {
             daysElapsed = ChronoUnit.DAYS.between(applicant.getStatusDate(), LocalDate.now());
+        }
+
+
+        //ApplicantService에 있는 메소드 extractOriginalFileName사용
+        //null이 아닌경우에만 파일이름을 추출
+        String originalFileName1 = null;
+        String originalFileName2 = null;
+        String originalFileName3 = null;
+
+        if (applicant.getResumeFileName1() != null) {
+            String fileName1 = applicant.getResumeFileName1();
+             originalFileName1 = ApplicantService.extractOriginalFileName(fileName1);
+        }
+        if (applicant.getResumeFileName2() != null) {
+            String fileName2 = applicant.getResumeFileName2();
+             originalFileName2 = ApplicantService.extractOriginalFileName(fileName2);
+        }
+        if (applicant.getResumeFileName3() != null) {
+            String fileName3 = applicant.getResumeFileName3();
+             originalFileName3 = ApplicantService.extractOriginalFileName(fileName3);
         }
 
         ApplicantDTO dto = new ApplicantDTO();
@@ -55,12 +80,12 @@ public class ApplicantDTO {  //대소문자 확인하기
         dto.setInstitution(applicant.getInstitution());
         dto.setInstitutionId(applicant.getInstitution().getId());
         dto.setStatusDate(daysElapsed);
-        dto.setResume1(applicant.getResume1());
-        dto.setResumeFileName1(applicant.getResumeFileName1());
-        dto.setResume2(applicant.getResume2());
-        dto.setResumeFileName2(applicant.getResumeFileName2());
-        dto.setResume3(applicant.getResume3());
-        dto.setResumeFileName3(applicant.getResumeFileName3());
+        dto.setResume1Path(applicant.getResume1Path());
+        dto.setResume2Path(applicant.getResume2Path());
+        dto.setResume3Path(applicant.getResume3Path());
+        dto.setResumeFileName1(originalFileName1);
+        dto.setResumeFileName2(originalFileName2);
+        dto.setResumeFileName3(originalFileName3);
 
         return dto;
     }

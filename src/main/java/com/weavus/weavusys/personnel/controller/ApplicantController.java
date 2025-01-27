@@ -47,16 +47,17 @@ public class ApplicantController {
 
     //지원자 이력서 업로드
     @PostMapping("/applicant/{id}/upload")
-    public String uploadResume(@PathVariable Long id,
-                               @RequestParam("resume") MultipartFile multipartFile,
-                               @RequestParam int resumeNumber) {
-        return applicantService.uploadResume(id, multipartFile, resumeNumber);
+    public ResponseEntity<Applicant> uploadResume(@PathVariable Long id,
+                               @RequestParam("files") List<MultipartFile> files,
+                               @RequestParam("resumeTypes") List<String> resumeTypes
+    ) {
+        return applicantService.uploadResumes(id, files, resumeTypes);
     }
 
     //지원자 이력서 다운로드
     @GetMapping("/applicant/{id}/download")
-    public ResponseEntity<ByteArrayResource> downloadResume(@PathVariable Long id,
-                                                            @RequestParam int resumeNumber) {
-        return applicantService.downloadResume(id, resumeNumber);
+    public ResponseEntity<ByteArrayResource> downloadResume(@PathVariable Long id
+                                                            ) {
+        return applicantService.downloadResumes(id);
     }
 }

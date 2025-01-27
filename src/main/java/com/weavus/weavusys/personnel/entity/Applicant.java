@@ -49,15 +49,15 @@ import java.time.LocalDate;
 
         //이력서 파일 저장
         @Lob
-        private byte[] resume1;  // 첫 번째 이력서
+        private String resume1Path;;  // 첫 번째 이력서
         private String resumeFileName1;  // 첫 번째 이력서 파일 이름
 
         @Lob
-        private byte[] resume2;  // 두 번째 이력서
+        private String resume2Path;  // 두 번째 이력서
         private String resumeFileName2;  // 두 번째 이력서 파일 이름
 
         @Lob
-        private byte[] resume3;  // 세 번째 이력서
+        private String resume3Path;  // 세 번째 이력서
         private String resumeFileName3;  // 세 번째 이력서 파일 이름
 
         public static Applicant fromDTO(ApplicantDTO applicantDTO, Institution institution) {
@@ -86,11 +86,11 @@ import java.time.LocalDate;
             applicant.setVisaApplicationDate(applicantDTO.getVisaApplicationDate());
             applicant.setInstitution(institution);
 
-            applicant.setResume1(applicantDTO.getResume1());
+            applicant.setResume1Path(applicantDTO.getResume1Path());
+            applicant.setResume2Path(applicantDTO.getResume2Path());
+            applicant.setResume3Path(applicantDTO.getResume3Path());
             applicant.setResumeFileName1(applicantDTO.getResumeFileName1());
-            applicant.setResume2(applicantDTO.getResume2());
             applicant.setResumeFileName2(applicantDTO.getResumeFileName2());
-            applicant.setResume3(applicantDTO.getResume3());
             applicant.setResumeFileName3(applicantDTO.getResumeFileName3());
 
             return applicant;
