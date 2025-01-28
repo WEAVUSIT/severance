@@ -43,6 +43,8 @@ import java.time.LocalDate;
 
         private LocalDate statusDate; // 상태 변경일
 
+        private String log; // 상태 변경 이력 및 메모
+
         @ManyToOne
         @JoinColumn(name = "institution_id", nullable = false)
         private Institution institution; // 소속 교육기관 조인

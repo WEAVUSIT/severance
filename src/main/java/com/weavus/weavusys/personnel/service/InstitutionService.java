@@ -43,6 +43,7 @@ public class InstitutionService {
         dto.setId(institution.getId());
         dto.setName(institution.getName());
         dto.setContactInfo(institution.getContactInfo());
+        dto.setLog(institution.getLog());
         dto.setApplicantNames(
                 applicantRepository.findByInstitutionId(id) != null
                         ? applicantRepository.findByInstitutionId(id).stream().map(applicant -> applicant.getName()).collect(Collectors.toList())
@@ -76,6 +77,7 @@ public class InstitutionService {
                     .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
             institution.setName(institutionDTO.getName());
             institution.setContactInfo(institutionDTO.getContactInfo());
+            institution.setLog(institutionDTO.getLog());
             institutionRepository.save(institution);
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {

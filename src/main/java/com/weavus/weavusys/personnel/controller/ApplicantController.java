@@ -60,4 +60,10 @@ public class ApplicantController {
                                                             ) {
         return applicantService.downloadResumes(id);
     }
+
+    //지원자 이력서 삭제
+    @DeleteMapping("/applicant/{fileId}/fileDelete")
+    public ResponseEntity deleteResume(@PathVariable Long fileId) {
+        return applicantService.deleteFile(fileId);
+    }
 }

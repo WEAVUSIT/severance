@@ -15,11 +15,7 @@ import lombok.NoArgsConstructor;
         private String name;
         @Column(nullable = false)
         private String contactInfo;
-//        @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, orphanRemoval = true)
-//        @ToString.Exclude // 순환 참조 방지
-//        private List<Applicant> applicants;
-//        @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, orphanRemoval = true)
-//        @ToString.Exclude
-//        private List<Schedule> schedules;
+        private String log; // 상태 변경 이력 및 메모
+
 
     }
