@@ -69,7 +69,7 @@ public class EmployeeService {
         // month 12개월 초과 시 now와 endDate를 비교하여 2, 1값 을 state에 부여
         // 0 : 지급 불가능, 1 : 지금 가능, 2 : 지급 완료
 
-        Optional<Employee> employeeDto = employeeRepository.findById(employee.getId());
+        Optional<Employee> employeeDto = employeeRepository.findById(String.valueOf(employee.getId()));
         if (employeeDto.isEmpty()){ //변수명 불명확하여 변경
             try {
                 employee.setStatus(0);
