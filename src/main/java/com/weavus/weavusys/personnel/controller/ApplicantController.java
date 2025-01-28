@@ -5,7 +5,7 @@ import com.weavus.weavusys.personnel.dto.ApplicantDTO;
 import com.weavus.weavusys.personnel.entity.Applicant;
 import com.weavus.weavusys.personnel.service.ApplicantService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,7 +56,7 @@ public class ApplicantController {
 
     //지원자 이력서 다운로드
     @GetMapping("/applicant/{id}/download")
-    public ResponseEntity<ByteArrayResource> downloadResume(@PathVariable Long id
+    public ResponseEntity<Resource> downloadResume(@PathVariable Long id
                                                             ) {
         return applicantService.downloadResumes(id);
     }
