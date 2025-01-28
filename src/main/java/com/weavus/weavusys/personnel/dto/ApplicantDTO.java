@@ -27,6 +27,7 @@ public class ApplicantDTO {
     private Institution institution;
     private Long institutionId;
     private Long statusDate;
+    private String log;
 
     //ApplicantDTO에 ApplicantFile 연결
     private List<ApplicantFile> applicantFile;
@@ -58,6 +59,7 @@ public class ApplicantDTO {
         dto.setInstitution(applicant.getInstitution());
         dto.setInstitutionId(applicant.getInstitution().getId());
         dto.setStatusDate(daysElapsed);
+        dto.setLog(applicant.getLog());
 
         return dto;
     }

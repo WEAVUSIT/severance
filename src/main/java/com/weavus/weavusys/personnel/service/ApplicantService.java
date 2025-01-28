@@ -90,14 +90,13 @@ public class ApplicantService {
             applicant.setAdmissionStatus(AdmissionStatus.valueOf(applicantDTO.getAdmissionStatus()));
             applicant.setVisaApplicationDate(applicantDTO.getVisaApplicationDate());
             applicant.setVisaStatus(VisaStatus.valueOf(applicantDTO.getVisaStatus()));
+            applicant.setLog(applicantDTO.getLog());
             Institution newInstitution = institutionRepository.findById(applicantDTO.getInstitutionId()).orElse(null);
             if(newInstitution != null) {
                 applicant.setInstitution(newInstitution);
             } else {
                 throw new IllegalArgumentException("Institution with id " + applicantDTO.getInstitution().getId() + " not found");
             }
-
-            //만약 AdmissionStatus가 변경되었다면 statusDate를 현재 날짜로 업데이트
 
             return applicantRepository.save(applicant);
         }
@@ -189,6 +188,12 @@ public class ApplicantService {
                 throw new RuntimeException("Failed to create ZIP file", e);
             }
 
+        }
+
+        //파일 삭제 기능 파일 id값을 받아오면 삭제
+        public ResponseEntity deleteFile(Long id) {
+            applicantFileRepository.deleteById(id);
+            return ResponseEntity.ok().build();
         }
 
 }
