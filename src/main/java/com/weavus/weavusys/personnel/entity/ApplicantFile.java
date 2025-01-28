@@ -29,8 +29,8 @@ public class ApplicantFile {
     @Lob
     @Column(name = "file_data", nullable = false, columnDefinition = "LONGBLOB")
     private byte[] fileData;
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name="resumeType", nullable = false)
     private String resumeType;
