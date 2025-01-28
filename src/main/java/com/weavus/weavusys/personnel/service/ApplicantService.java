@@ -1,16 +1,37 @@
 package com.weavus.weavusys.personnel.service;
 
 import com.weavus.weavusys.enums.AdmissionStatus;
+import com.weavus.weavusys.enums.Gender;
 import com.weavus.weavusys.enums.VisaStatus;
 import com.weavus.weavusys.personnel.dto.ApplicantDTO;
 import com.weavus.weavusys.personnel.entity.Applicant;
+import com.weavus.weavusys.personnel.entity.ApplicantFile;
 import com.weavus.weavusys.personnel.entity.Institution;
+import com.weavus.weavusys.personnel.repository.ApplicantFileRepository;
 import com.weavus.weavusys.personnel.repository.ApplicantRepository;
 import com.weavus.weavusys.personnel.repository.InstitutionRepository;
 import lombok.RequiredArgsConstructor;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionLevel;
+import net.lingala.zip4j.model.enums.CompressionMethod;
+import net.lingala.zip4j.model.enums.EncryptionMethod;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +40,8 @@ import java.util.stream.Collectors;
 public class ApplicantService {
     private final ApplicantRepository applicantRepository;
     private final InstitutionRepository institutionRepository;
+    private final ApplicantFileRepository applicantFileRepository;
+    private static final String upload_Dir = "C:/test";
 
     public List<ApplicantDTO> getAllApplicants() {
         return applicantRepository.findAll().stream()
@@ -29,7 +52,16 @@ public class ApplicantService {
     public ApplicantDTO getApplicantDetails(Long id) {
         //개별적인 id를 가지고 유저 정보를 취득한다 dto변환은 toDTO사용
         Applicant applicant = applicantRepository.findById(id).orElseThrow();
-        return ApplicantDTO.toDTO(applicant);
+        ApplicantDTO applicantDTO = ApplicantDTO.toDTO(applicant);
+//        applicantDTO.setApplicantFile(
+//                applicantFileRepository.findByApplicantId(id) != null
+//                        ? applicantFileRepository.findByApplicantId(id).stream().collect(Collectors.toList())
+//                        : List.of()
+//        );
+        List<ApplicantFile> applicantFiles = applicantFileRepository.findByApplicantId(id);
+        applicantDTO.setApplicantFile(applicantFiles != null ? applicantFiles : List.of());
+
+        return applicantDTO;
     }
 
     public String addApplicant(ApplicantDTO applicantDTO) {
@@ -37,57 +69,131 @@ public class ApplicantService {
                 .orElseThrow(
                 () -> new IllegalArgumentException("Institution with id " + applicantDTO.getInstitutionId() + " not found")
         );
-        applicantRepository.save(Applicant.fromDTO(applicantDTO, institution));
+
+        Applicant applicant = Applicant.fromDTO(applicantDTO, institution);
+        applicantRepository.save(applicant);
         return "Applicant added successfully";
     }
 
-    public String updateApplicant(Long id, ApplicantDTO applicantDTO) {
-        Applicant applicant = applicantRepository.findById(id).orElseThrow();
-        applicant.setName(applicantDTO.getName());
-        applicant.setJoiningDate(applicantDTO.getJoiningDate());
-        applicant.setAdmissionStatus(AdmissionStatus.fromValue(applicantDTO.getAdmissionStatus()));
-        applicant.setVisaStatus(VisaStatus.fromValue(applicantDTO.getVisaStatus()));
-        applicant.setInstitution(institutionRepository.findById(applicantDTO.getInstitution().getId()).orElseThrow());
-        applicantRepository.save(applicant);
-        return "Applicant updated successfully";
+    @Transactional
+    public Applicant updateApplicant(Long id, ApplicantDTO applicantDTO) {
+
+        Optional<Applicant> applicantUp= applicantRepository.findById(id);
+
+        if(applicantUp.isPresent()) {
+            Gender gender = Gender.fromDisplayName(applicantDTO.getGender());
+            Applicant applicant = applicantUp.get();
+            if (!applicant.getAdmissionStatus().name().equals(applicantDTO.getAdmissionStatus())) {
+                applicant.setStatusDate(LocalDate.now());
+            }
+            applicant.setName(applicantDTO.getName());
+            applicant.setGender(gender);
+            applicant.setEmail(applicantDTO.getEmail());
+            applicant.setBirthDate(applicantDTO.getBirthDate());
+            applicant.setPhoneNumber(applicantDTO.getPhoneNumber());
+            applicant.setJoiningDate(applicantDTO.getJoiningDate());
+            applicant.setAdmissionStatus(AdmissionStatus.valueOf(applicantDTO.getAdmissionStatus()));
+            applicant.setVisaApplicationDate(applicantDTO.getVisaApplicationDate());
+            applicant.setVisaStatus(VisaStatus.valueOf(applicantDTO.getVisaStatus()));
+            Institution newInstitution = institutionRepository.findById(applicantDTO.getInstitutionId()).orElse(null);
+            if(newInstitution != null) {
+                applicant.setInstitution(newInstitution);
+            } else {
+                throw new IllegalArgumentException("Institution with id " + applicantDTO.getInstitution().getId() + " not found");
+            }
+
+            //만약 AdmissionStatus가 변경되었다면 statusDate를 현재 날짜로 업데이트
+
+            return applicantRepository.save(applicant);
+        }
+        return null;
     }
 
     public String deleteApplicant(Long id) {
         applicantRepository.deleteById(id);
         return "Applicant deleted successfully";
     }
-//파일다운로드 제작중
-//    public String uploadResume(Long id, MultipartFile multipartFile) {
-//        Applicant applicant = applicantRepository.findById(id).orElseThrow();
-//
-//
-//        try {
-//            applicant.setResume(multipartFile.getBytes());
-//            applicant.setResumeFileName(multipartFile.getOriginalFilename());
-//            applicantRepository.save(applicant);
-//            return "Resume uploaded successfully";
-//        } catch (Exception e) {
-//            throw new RuntimeException("Failed to upload resume: " + e.getMessage());
-//        }
-//
-//    }
-//
-//    public ResponseEntity<Resource> downloadResume(Long id) {
-//        Applicant applicant = applicantRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Applicant not found"));
-//
-//        byte[] resumeData = applicant.getResume();
-//        if (resumeData == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        ByteArrayResource resource = new ByteArrayResource(resumeData);
-//
-//        String fileName = "resume_" + id + ".pdf"; // 파일명을 동적으로 설정
-//
-//        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
-//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-//                .body((Resource) resource);
-//    }
+
+
+    @Transactional
+    public ResponseEntity<Applicant> uploadResumes(Long id, List<MultipartFile> files, List<String> resumeTypes) {
+    // 지원자 확인
+    Applicant applicant = applicantRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Applicant not found with id: " + id));
+
+    // 파일 저장
+    for (int i = 0; i < files.size(); i++) {
+        MultipartFile file = files.get(i);
+        String resumeType = resumeTypes.get(i);
+        applicantFileRepository.findByApplicantIdAndResumeType(id, resumeType)
+                .ifPresent(applicantFileRepository::delete);
+
+        try {
+            ApplicantFile applicantFile = ApplicantFile.builder()
+                    .applicant(applicant)
+                    .fileName(file.getOriginalFilename())
+                    .fileType(file.getContentType())
+                    .fileData(file.getBytes())
+                    .resumeType(resumeType)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            applicantFileRepository.save(applicantFile);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file " + file.getOriginalFilename(), e);
+        }
+    }
+        List<ApplicantFile> existingFiles = applicantFileRepository.findByApplicantIdOrderByCreatedAt(id);
+        if (existingFiles.size() > 3) {
+            // 초과 파일 삭제 (예: 오래된 파일 삭제)
+            List<ApplicantFile> filesToRemove = existingFiles.subList(3, existingFiles.size());
+            applicantFileRepository.deleteAll(filesToRemove);
+        }
+
+    return ResponseEntity.ok(applicant);
+}
+
+        public ResponseEntity<Resource> downloadResumes(Long id) {
+            List<ApplicantFile> applicantFiles = applicantFileRepository.findByApplicantId(id);
+
+            if (applicantFiles.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            try {
+                // 임시 ZIP 파일 생성
+                File zipFile = File.createTempFile("지원자이력서", ".zip");
+
+                // ZIP 파일 암호화
+                String password = "1234";
+                ZipParameters zipParameters = new ZipParameters();
+                zipParameters.setCompressionMethod(CompressionMethod.DEFLATE);
+                zipParameters.setCompressionLevel(CompressionLevel.NORMAL);
+                zipParameters.setEncryptFiles(true);
+                zipParameters.setEncryptionMethod(EncryptionMethod.ZIP_STANDARD);
+
+                // 압축 파일 생성 및 파일 추가
+                ZipFile secureZip = new ZipFile(zipFile, password.toCharArray());
+                for (ApplicantFile applicantFile : applicantFiles) {
+                    String originalFileName = applicantFile.getFileName(); // 저장된 원래 파일 이름 가져오기
+                    File tempFile = new File(System.getProperty("java.io.tmpdir"), originalFileName); // 원래 이름 사용
+                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                        fos.write(applicantFile.getFileData());
+                    }
+                    secureZip.addFile(tempFile, zipParameters);
+                    tempFile.delete(); // 임시 파일 삭제
+                }
+
+                // ZIP 파일을 클라이언트로 전송
+                Resource resource = new ByteArrayResource(java.nio.file.Files.readAllBytes(zipFile.toPath()));
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resumes_" + id + ".zip\"")
+                        .body(resource);
+
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create ZIP file", e);
+            }
+
+        }
+
 }

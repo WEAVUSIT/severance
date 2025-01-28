@@ -1,6 +1,7 @@
 package com.weavus.weavusys.personnel.service;
 
 
+import com.weavus.weavusys.enums.ScheduleType;
 import com.weavus.weavusys.personnel.dto.InstitutionDTO;
 import com.weavus.weavusys.personnel.dto.InstitutionDetailsDTO;
 import com.weavus.weavusys.personnel.dto.ScheduleDTO;
@@ -39,10 +40,10 @@ public class InstitutionService {
                 .orElseThrow(() -> new IllegalArgumentException("Institution with id " + id + " not found"));
 
         InstitutionDetailsDTO dto = new InstitutionDetailsDTO();
+        dto.setId(institution.getId());
         dto.setName(institution.getName());
         dto.setContactInfo(institution.getContactInfo());
         dto.setApplicantNames(
-//                institution.getApplicants() != null
                 applicantRepository.findByInstitutionId(id) != null
                         ? applicantRepository.findByInstitutionId(id).stream().map(applicant -> applicant.getName()).collect(Collectors.toList())
                         : List.of()
@@ -89,8 +90,9 @@ public class InstitutionService {
     public ResponseEntity addSchedule(Long institutionId, ScheduleDTO scheduleDTO) {
         Institution institution = institutionRepository.findById(institutionId)
                 .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
-        scheduleDTO.setInstitutionId(institutionId);
+
         scheduleRepository.save(Schedule.fromSchedule(scheduleDTO, institution));
+
         return ResponseEntity.ok().build();
     }
 
@@ -103,7 +105,7 @@ public class InstitutionService {
         schedule.setScheduleInfo(scheduleDTO.getScheduleInfo());
         schedule.setStartDateTime(scheduleDTO.getStartDateTime());
         schedule.setEndDateTime(scheduleDTO.getEndDateTime());
-
+        schedule.setScheduleType(ScheduleType.valueOf(scheduleDTO.getScheduleType()));
         scheduleRepository.save(schedule);
         return ResponseEntity.ok().build();
     }
@@ -113,6 +115,27 @@ public class InstitutionService {
                 .orElseThrow(() -> new IllegalArgumentException("Schedule not found"));
 
         scheduleRepository.delete(schedule);
+        return ResponseEntity.ok().build();
+    }
+
+    public ScheduleDTO getScheduleDetails(Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("Schedule not found"));
+
+        return ScheduleDTO.ToScheduleDTO(schedule);
+    }
+
+    public List<ScheduleDTO> getAllSchedules() {
+        return scheduleRepository.findAll().stream()
+                .map(ScheduleDTO::ToScheduleDTO)
+                .collect(Collectors.toList());
+    }
+
+    public ResponseEntity deleteInstitution(Long id) {
+        Institution institution = institutionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Institution not found"));
+
+        institutionRepository.delete(institution);
         return ResponseEntity.ok().build();
     }
 }

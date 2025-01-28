@@ -26,11 +26,9 @@ public class BatchAccrualService {
     private final AccrualRepository accrualRepository;
     private final SettingsRepository settingsRepository;
     private final MonthLogRepository monthLogRepository;
-
     private final EmployeeRepository employeeRepository;
 
     @Scheduled(cron = "0 0 0 1 * ?") // 매월 1일 자정 calculateTotalAccrual실행
-
     public void scheduleBatchAccrual() {
         calculateTotalAccrual();
     }
@@ -39,10 +37,10 @@ public class BatchAccrualService {
 
         List<Accrual> accrualList = accrualRepository.findAll();
         LocalDate now = LocalDate.now();
+//        LocalDate now = LocalDate.of(2025, 1, 1).plusMonths(i); // 테스트용
         YearMonth nowMonth = YearMonth.from(now);
         MonthLog monthLog = new MonthLog();
         long monthTotal = 0;
-
 
         for (Accrual accrual : accrualList) {
             //직급 별로 월 적립금 금액 취득
@@ -90,8 +88,8 @@ public class BatchAccrualService {
 
                 // 계산된 적립금 저장
                 accrual.setTotalAmount(result);
-                accrualRepository.save(accrual);
             }
+            accrualRepository.save(accrual);
         }
         //월별 누적된 적립금 로그 저장
         monthLog.setMonthlyTotal(monthTotal);
@@ -126,8 +124,6 @@ public class BatchAccrualService {
                 }
             }
         }
-
         return yearlyTotal;
-
     }
 }
