@@ -53,11 +53,6 @@ public class ApplicantService {
         //개별적인 id를 가지고 유저 정보를 취득한다 dto변환은 toDTO사용
         Applicant applicant = applicantRepository.findById(id).orElseThrow();
         ApplicantDTO applicantDTO = ApplicantDTO.toDTO(applicant);
-//        applicantDTO.setApplicantFile(
-//                applicantFileRepository.findByApplicantId(id) != null
-//                        ? applicantFileRepository.findByApplicantId(id).stream().collect(Collectors.toList())
-//                        : List.of()
-//        );
         List<ApplicantFile> applicantFiles = applicantFileRepository.findByApplicantId(id);
         applicantDTO.setApplicantFile(applicantFiles != null ? applicantFiles : List.of());
 
