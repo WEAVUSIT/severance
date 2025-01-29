@@ -103,14 +103,20 @@ public class ApplicantService {
         return null;
     }
 
+    @Transactional
     public String deleteApplicant(Long id) {
-        applicantRepository.deleteById(id);
-        return "Applicant deleted successfully";
+        try{
+            applicantFileRepository.deleteByApplicantId(id);
+            applicantRepository.deleteById(id);
+            return "Applicant deleted successfully";
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Applicant not found with id: " + id + e);
+        }
     }
 
 
     @Transactional
-    public ResponseEntity<Applicant> uploadResumes(Long id, List<MultipartFile> files, List<String> resumeTypes) {
+    public ResponseEntity<List<ApplicantFile>> uploadResumes(Long id, List<MultipartFile> files, List<String> resumeTypes) {
     // 지원자 확인
     Applicant applicant = applicantRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Applicant not found with id: " + id));
@@ -136,14 +142,15 @@ public class ApplicantService {
             throw new RuntimeException("Failed to store file " + file.getOriginalFilename(), e);
         }
     }
-        List<ApplicantFile> existingFiles = applicantFileRepository.findByApplicantIdOrderByCreatedAt(id);
-        if (existingFiles.size() > 3) {
+        List<ApplicantFile> updatedFiles  = applicantFileRepository.findByApplicantIdOrderByCreatedAt(id);
+        if (updatedFiles.size() > 3) {
             // 초과 파일 삭제 (예: 오래된 파일 삭제)
-            List<ApplicantFile> filesToRemove = existingFiles.subList(3, existingFiles.size());
+            List<ApplicantFile> filesToRemove = updatedFiles.subList(3, updatedFiles.size());
             applicantFileRepository.deleteAll(filesToRemove);
+            updatedFiles = updatedFiles.subList(0, 3); // 삭제 후 최신 리스트 다시 설정
         }
 
-    return ResponseEntity.ok(applicant);
+    return ResponseEntity.ok(updatedFiles);
 }
 
         public ResponseEntity<Resource> downloadResumes(Long id) {

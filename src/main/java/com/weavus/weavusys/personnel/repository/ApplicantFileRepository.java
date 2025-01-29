@@ -2,7 +2,9 @@ package com.weavus.weavusys.personnel.repository;
 
 import com.weavus.weavusys.personnel.entity.ApplicantFile;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +17,8 @@ public interface ApplicantFileRepository extends JpaRepository<ApplicantFile, Lo
     Optional<ApplicantFile> findByApplicantIdAndResumeType(Long applicantId, String resumeType);
 
     List<ApplicantFile> findByApplicantIdOrderByCreatedAt(Long id);
+
+    @Modifying
+    @Transactional
+    void deleteByApplicantId(Long applicantId);
 }
