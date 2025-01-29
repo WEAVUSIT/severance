@@ -79,7 +79,7 @@ public class InstitutionService {
             institution.setContactInfo(institutionDTO.getContactInfo());
             institution.setLog(institutionDTO.getLog());
             institutionRepository.save(institution);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(institution);
         } catch (IllegalArgumentException e) {
             Map<String, String > error = new HashMap<>();
             error.put("error", "Invalid Request");

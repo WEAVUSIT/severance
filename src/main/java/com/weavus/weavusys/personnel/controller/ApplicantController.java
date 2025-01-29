@@ -3,6 +3,7 @@ package com.weavus.weavusys.personnel.controller;
 
 import com.weavus.weavusys.personnel.dto.ApplicantDTO;
 import com.weavus.weavusys.personnel.entity.Applicant;
+import com.weavus.weavusys.personnel.entity.ApplicantFile;
 import com.weavus.weavusys.personnel.service.ApplicantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -47,9 +48,9 @@ public class ApplicantController {
 
     //지원자 이력서 업로드
     @PostMapping("/applicant/{id}/upload")
-    public ResponseEntity<Applicant> uploadResume(@PathVariable Long id,
-                               @RequestParam("files") List<MultipartFile> files,
-                               @RequestParam("resumeTypes") List<String> resumeTypes
+    public ResponseEntity<List<ApplicantFile>> uploadResume(@PathVariable Long id,
+                                                      @RequestParam("files") List<MultipartFile> files,
+                                                      @RequestParam("resumeTypes") List<String> resumeTypes
     ) {
         return applicantService.uploadResumes(id, files, resumeTypes);
     }
