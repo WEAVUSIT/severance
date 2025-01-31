@@ -43,8 +43,8 @@ public class EmployeeController {
 
     @Operation(summary = "직원 등록", description = "새로운 직원을 등록합니다.")
     @PostMapping
-    public String addEmployee(@RequestBody Employee employee) {
-        return employeeService.save(employee); //저장 시 메세지 발송 기능 서비스로 이동
+    public String addEmployee(@RequestBody Employee employee, @RequestHeader("Role") int role) {
+        return employeeService.save(employee, role); //저장 시 메세지 발송 기능 서비스로 이동
     }
 
     @Operation(summary = "직원 정보 수정", description = "특정 직원의 정보를 수정합니다.")

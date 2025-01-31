@@ -1,13 +1,7 @@
 package com.weavus.weavusys.calcul.service;
 
-import com.weavus.weavusys.calcul.repo.AccrualRepository;
-import com.weavus.weavusys.calcul.repo.EmployeeRepository;
-import com.weavus.weavusys.calcul.repo.MonthLogRepository;
-import com.weavus.weavusys.calcul.repo.SettingsRepository;
-import com.weavus.weavusys.calcul.entity.Accrual;
-import com.weavus.weavusys.calcul.entity.Amount;
-import com.weavus.weavusys.calcul.entity.Employee;
-import com.weavus.weavusys.calcul.entity.MonthLog;
+import com.weavus.weavusys.calcul.entity.*;
+import com.weavus.weavusys.calcul.repo.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +20,9 @@ public class EmployeeService {
     private final AccrualRepository accrualRepository;
     private final SettingsRepository settingsRepository;
     private final MonthLogRepository monthLogRepository;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final UserRepository userRepository;
+
 
     public List<Employee> findAll() {
         return employeeRepository.findByStatus(0);
@@ -43,7 +40,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public String save(Employee employee) {
+    public String save(Employee employee, int role) {
         String validationMessage = validateExitDate(employee);
         if (validationMessage != null) {
             return validationMessage;
@@ -70,13 +67,15 @@ public class EmployeeService {
         // 0 : 지급 불가능, 1 : 지금 가능, 2 : 지급 완료
 
         Optional<Employee> employeeDto = employeeRepository.findById(String.valueOf(employee.getId()));
-        if (employeeDto.isEmpty()){ //변수명 불명확하여 변경
+        Optional<AdminUser> adminUserDto = userRepository.findByUsername(employee.getId());
+        if (employeeDto.isEmpty() && adminUserDto.isEmpty()){ //변수명 불명확하여 변경
             try {
                 employee.setStatus(0);
                 employeeRepository.save(employee);
                 Accrual accrual = new Accrual();
                 accrual.setEmployee(employee);
                 accrual.setState(state);
+                customUserDetailsService.registerUser(employee.getId(), "Weavus-12345", role);
 
                 // 기존 정직원 초기 등록 적립금 계산
                 if(employee.getEmployeeType().equals(Employee.EmployeeType.REGULAR)){
@@ -98,6 +97,7 @@ public class EmployeeService {
                 }
 
                 accrualRepository.save(accrual);
+
 
                 return "등록이 완료되었습니다."; //저장 성공 여부 바로 메세지 발송으로 변경
             } catch (Exception e){

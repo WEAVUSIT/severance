@@ -59,6 +59,10 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**").permitAll()  // 이 줄 추가
                         .requestMatchers("/v3/api-docs/**").permitAll()  // Swagger API 예외
                         .requestMatchers("/weavusys").permitAll()
+                                .requestMatchers("/api/personnel/**").hasRole("ADMIN")
+                                .requestMatchers("/api/employees/**").hasRole("ADMIN")
+                                .requestMatchers("/api/signup/**").hasRole("ADMIN")
+                                .requestMatchers("workSchedule/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
