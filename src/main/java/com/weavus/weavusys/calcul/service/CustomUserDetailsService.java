@@ -2,6 +2,7 @@ package com.weavus.weavusys.calcul.service;
 
 import com.weavus.weavusys.calcul.entity.AdminUser;
 import com.weavus.weavusys.calcul.repo.UserRepository;
+import com.weavus.weavusys.enums.Admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void registerUser(String username, String password) {
+    public void registerUser(String username, String password, int adminRole) {
         //아이디 중복 검사
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("이미 사용중인 아이디입니다.");
@@ -27,7 +28,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         AdminUser user = new AdminUser();
         user.setUsername(username);
         user.setPassword(encodedPassword);
-        user.setRoles("ADMIN");
+        if(adminRole == 1){
+            user.setRoles(Admin.fromValue(adminRole));
+        } else {
+            user.setRoles(Admin.fromValue(adminRole));
+        }
 
         try {
             userRepository.save(user);
@@ -43,7 +48,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
         return User.withUsername(user.getUsername())
                 .password(user.getPassword())
-                .roles(user.getRoles())
+                .authorities("ROLE_" + user.getRoles().name())
                 .build();
     }
 }
