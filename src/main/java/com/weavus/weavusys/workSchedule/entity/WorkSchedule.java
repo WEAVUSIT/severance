@@ -1,8 +1,12 @@
 package com.weavus.weavusys.workSchedule.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.weavus.weavusys.calcul.entity.Employee;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,34 +21,33 @@ public class WorkSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
-    private LocalDate workDate; // 출근 날짜
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee; // 사원 ID (employees 테이블과 조인)
     @Column(nullable = false)
+    private LocalDate checkInDate; // 출근 날짜
+    @Column(nullable = false)
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime checkInTime; // 출근 시간
-    @Column(nullable = false)
     private LocalDate checkOutDate; // 퇴근 날짜 (야근 고려)
-    @Column(nullable = false)
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime checkOutTime; // 퇴근 시간
-
-//    @ManyToOne
-//    @JoinColumn(name = "workInfo_id", nullable = false)
-//    private WorkInfo workInfo; // 현장 정보
-
     @Column(nullable = false)
-    private boolean isHoliday; // 휴가 여부
+    private int isHoliday; // 휴가 여부
     @Column
-    private String log; // 비고
+    private String memo; // 비고
     @Column(nullable = false)
-    private LocalTime brakeTimeIn; // 휴게시간
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime breakTimeIn; // 휴게시간
     @Column(nullable = false)
-    private LocalTime brakeTimeOut; // 휴게시간
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime breakTimeOut; // 휴게시간
     @Column(nullable = false)
-    private String workType; // 근무 유형
+    private String workType; // 근무 유형 - 欠勤,代休,有給休暇,振替休日,特別休暇,慶弔休暇,休日出勤
     @Column(nullable = false)
-    private String workLocation; // 근무지
+    private String workLocation; // 근무지 - 현장 위치
+    @Column(nullable = false)
+    private String workPosition; //근무 위치 - 본사, 현장, 재택근무
     //출근시간, 퇴근시간, 휴가 시간 고정으로 수정 가능하게,
     //마이페이지 -> 이름, 아이디,-< 변동 안되게 출근, 퇴근, 휴게시간 입력으로 디폴트 값
 }
