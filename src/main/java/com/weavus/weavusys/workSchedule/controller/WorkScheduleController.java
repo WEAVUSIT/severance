@@ -1,13 +1,13 @@
 package com.weavus.weavusys.workSchedule.controller;
 
 
+import com.weavus.weavusys.workSchedule.dto.EmployeeWorkDateDTO;
+import com.weavus.weavusys.workSchedule.dto.WorkScheduleDTO;
 import com.weavus.weavusys.workSchedule.entity.WorkSchedule;
 import com.weavus.weavusys.workSchedule.service.WorkScheduleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,13 +16,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WorkScheduleController {
     private final WorkScheduleService workScheduleService;
-
-    @GetMapping("/{employeeId}/{year}/{month}")
-    public List<WorkSchedule> getWorkSchedule(@PathVariable Long employeeId,
+    @GetMapping("/{username}/{year}/{month}")
+    public List<WorkSchedule> getWorkSchedule(@PathVariable String username,
                                               @PathVariable int year,
-                                              @PathVariable int month
-    ) {
-        List<WorkSchedule> workSchedules = workScheduleService.getWorkSchedule(employeeId, year, month);
-        return workSchedules;
+                                              @PathVariable int month) {
+        List<WorkSchedule> workScheduleList = workScheduleService.getWorkSchedule(username, year, month);
+        return workScheduleList;
+    }
+    //EmployeeWorkDateDTO 저장
+    @PostMapping("/default/save")
+    public ResponseEntity saveDefaultWorkData(@RequestBody EmployeeWorkDateDTO employeeWorkDateDTO) {
+        return workScheduleService.saveDefaultWorkData(employeeWorkDateDTO);
+    }
+
+
+    //workschedule 저장
+    @PostMapping("/save")
+    public ResponseEntity saveWorkSchedule(@RequestBody WorkScheduleDTO workScheduleDTO) {
+        return workScheduleService.saveWorkSchedule(workScheduleDTO);
     }
 }

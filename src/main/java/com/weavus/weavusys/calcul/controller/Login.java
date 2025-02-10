@@ -1,6 +1,5 @@
 package com.weavus.weavusys.calcul.controller;
 
-import com.weavus.weavusys.calcul.repo.EmployeeRepository;
 import com.weavus.weavusys.calcul.repo.UserRepository;
 import com.weavus.weavusys.calcul.service.CustomUserDetailsService;
 import com.weavus.weavusys.config.JwtTokenProvider;
@@ -25,7 +24,6 @@ public class Login {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
-    private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
 
         @PostMapping("/login")

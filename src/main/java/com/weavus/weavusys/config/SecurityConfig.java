@@ -62,7 +62,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/personnel/**").hasRole("ADMIN")
                                 .requestMatchers("/api/employees/**").hasRole("ADMIN")
                                 .requestMatchers("/api/signup/**").hasRole("ADMIN")
-                                .requestMatchers("workSchedule/**").permitAll()
+                                .requestMatchers("/api/workSchedule/**").hasAnyRole("ADMIN", "GENERAL")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
