@@ -34,7 +34,6 @@ public class WorkSchedule {
     private LocalDate checkOutDate; // 퇴근 날짜 (야근 고려)
     @JsonFormat(pattern = "HH:mm")
     private LocalTime checkOutTime; // 퇴근 시간
-    @Column(nullable = false)
     private String memo; // 비고
     @Column(nullable = false)
     @JsonFormat(pattern = "HH:mm")
