@@ -18,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void registerUser(String username, String password, int adminRole) {
+    public void registerUser(String username, String password, String adminRole) {
         //아이디 중복 검사
         if (userRepository.findByUsername(username).isPresent()) {
             throw new RuntimeException("이미 사용중인 아이디입니다.");
@@ -28,11 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         AdminUser user = new AdminUser();
         user.setUsername(username);
         user.setPassword(encodedPassword);
-        if(adminRole == 1){
-            user.setRoles(Admin.fromValue(adminRole));
-        } else {
-            user.setRoles(Admin.fromValue(adminRole));
-        }
+        user.setRoles(Admin.valueOf(adminRole));
 
         try {
             userRepository.save(user);

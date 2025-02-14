@@ -19,8 +19,6 @@ public class ScheduleDTO {
     private Institution institution;
 
     public static ScheduleDTO ToScheduleDTO(Schedule schedule) {
-
-
         ScheduleDTO dto = new ScheduleDTO();
         dto.setId(schedule.getId());
         dto.setName(schedule.getName());

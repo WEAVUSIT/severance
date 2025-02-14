@@ -60,11 +60,11 @@ public class Login {
     //어드민 계정 추가 메소드
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> superAccount) {
-            int adminRole = 1;
+
             customUserDetailsService.registerUser(
                 superAccount.get("username"),
                 superAccount.get("password"),
-                    adminRole
+                    superAccount.get("role")
         );
          return ResponseEntity.ok(Map.of("message", "관리자 계정 회원가입 성공"));
     }
@@ -72,7 +72,7 @@ public class Login {
     //어드민 계정 권한 부여
     @PostMapping("/admin/signup/")
     public ResponseEntity<?> makeAdmin(@RequestBody Map<String, String> adminAcount,
-                                       @RequestHeader("Role") int adminRole) {
+                                       @RequestHeader("Role") String adminRole) {
         String username = adminAcount.get("username");
         String password = adminAcount.get("password");
         if(userRepository.findByUsername(username).isEmpty()){
@@ -87,10 +87,5 @@ public class Login {
             return ResponseEntity.ok(Map.of("message", "관리자 계정으로 등록 성공"));
         }
     }
-
-
-
-
-
 
 }

@@ -26,12 +26,13 @@ public class ApplicantFile {
     private String fileName;
     @Column(name = "file_type")
     private String fileType;
-    @Lob
-    @Column(name = "file_data", nullable = false, columnDefinition = "LONGBLOB")
-    private byte[] fileData;
+//    @Lob
+//    @Column(name = "file_data", nullable = false, columnDefinition = "LONGBLOB")
+//    private byte[] fileData;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    @Column(name = "filePath")
+    private String filePath;
     @Column(name="resumeType", nullable = false)
     private String resumeType;
 }

@@ -21,8 +21,8 @@ public class EmployeeWorkDate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = false)
-    private Employee employee; // 사원 ID (employees 테이블과 조인)
+    @JoinColumn(name = "employee_id", nullable = false, foreignKey = @ForeignKey(name = "FK_employee_work_date_employee"))
+    private Employee employee;
     @Column(nullable = false)
     @JsonFormat(pattern = "HH:mm")
     private LocalTime checkInTime; // 출근 시간
@@ -39,4 +39,6 @@ public class EmployeeWorkDate {
     @Column(nullable = false)
     @JsonFormat(pattern = "HH:mm")
     private LocalTime breakTimeOut; // 휴게시간 종료
+
+
 }
