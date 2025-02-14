@@ -17,7 +17,7 @@ public class WorkScheduleDTO {
     private LocalDate checkOutDate;
     private LocalTime breakTimeIn;
     private LocalTime breakTimeOut;
-    private int isHoliday;
+    private String isHoliday;
     private String memo;
     private String workType;
     private String workLocation;

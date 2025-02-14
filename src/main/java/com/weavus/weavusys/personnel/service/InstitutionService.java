@@ -2,6 +2,7 @@ package com.weavus.weavusys.personnel.service;
 
 
 import com.weavus.weavusys.enums.ScheduleType;
+import com.weavus.weavusys.personnel.dto.ApplicantDTO;
 import com.weavus.weavusys.personnel.dto.InstitutionDTO;
 import com.weavus.weavusys.personnel.dto.InstitutionDetailsDTO;
 import com.weavus.weavusys.personnel.dto.ScheduleDTO;
@@ -29,9 +30,20 @@ public class InstitutionService {
     private final ApplicantRepository applicantRepository;
 
     public List<InstitutionDTO> getAllInstitutions() {
-        return institutionRepository.findAll().stream()
-                .map(InstitutionDTO::convertToDTO)
-                .collect(Collectors.toList());
+
+         List<InstitutionDTO> dto = institutionRepository.findAll().stream()
+                 .map(InstitutionDTO::convertToDTO)
+                 .collect(Collectors.toList());
+         for (InstitutionDTO institutionDTO : dto) {
+             institutionDTO.setApplicants(
+                     applicantRepository.findByInstitutionId(institutionDTO.getId()) != null
+                             ? applicantRepository.findByInstitutionId(institutionDTO.getId()).stream()
+                             .map(ApplicantDTO::toDTO)
+                             .collect(Collectors.toList())
+                             : List.of()
+             );
+         }
+        return dto;
     }
 
 
@@ -44,15 +56,21 @@ public class InstitutionService {
         dto.setName(institution.getName());
         dto.setContactInfo(institution.getContactInfo());
         dto.setLog(institution.getLog());
-        dto.setApplicantNames(
+        dto.setManagerName(institution.getManagerName());
+        dto.setPosition(institution.getPosition());
+        dto.setApplicants(
                 applicantRepository.findByInstitutionId(id) != null
-                        ? applicantRepository.findByInstitutionId(id).stream().map(applicant -> applicant.getName()).collect(Collectors.toList())
+                        ? applicantRepository.findByInstitutionId(id).stream()
+                        .map(ApplicantDTO::toDTO)
+                        .collect(Collectors.toList())
                         : List.of()
         );
 
         dto.setSchedules(
                 scheduleRepository.findByInstitutionId(id) != null
-                        ? scheduleRepository.findByInstitutionId(id).stream().map(ScheduleDTO::ToScheduleDTO).collect(Collectors.toList())
+                        ? scheduleRepository.findByInstitutionId(id).stream()
+                        .map(ScheduleDTO::ToScheduleDTO)
+                        .collect(Collectors.toList())
                         : List.of()
         );
         return dto;
@@ -66,7 +84,8 @@ public class InstitutionService {
         Institution institution = new Institution();
         institution.setName(institutionDTO.getName());
         institution.setContactInfo(institutionDTO.getContactInfo());
-
+        institution.setManagerName(institutionDTO.getManagerName());
+        institution.setPosition(institutionDTO.getPosition());
         return institutionRepository.save(institution);
     }
 
@@ -78,6 +97,8 @@ public class InstitutionService {
             institution.setName(institutionDTO.getName());
             institution.setContactInfo(institutionDTO.getContactInfo());
             institution.setLog(institutionDTO.getLog());
+            institution.setManagerName(institutionDTO.getManagerName());
+            institution.setPosition(institutionDTO.getPosition());
             institutionRepository.save(institution);
             return ResponseEntity.ok(institution);
         } catch (IllegalArgumentException e) {

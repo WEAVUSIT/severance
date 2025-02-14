@@ -22,8 +22,6 @@ public class EmployeeService {
     private final MonthLogRepository monthLogRepository;
     private final CustomUserDetailsService customUserDetailsService;
     private final UserRepository userRepository;
-
-
     public List<Employee> findAll() {
         return employeeRepository.findByStatus(0);
     }
@@ -40,7 +38,7 @@ public class EmployeeService {
     }
 
     @Transactional
-    public String save(Employee employee, int role) {
+    public String save(Employee employee, String role) {
         String validationMessage = validateExitDate(employee);
         if (validationMessage != null) {
             return validationMessage;
@@ -136,11 +134,17 @@ public class EmployeeService {
         Optional<Employee> optionalEmployee = employeeRepository.findById(id);
         optionalEmployee.ifPresent(employee -> {
             employee.setStatus(1); //직원 상태 1 : 미사용, 0 : 사용중
-            if(employee.getExitDate() == null){ //퇴직일이 없으면 emploeey EndDate를 당일 날짜로 설정
+            if (employee.getExitDate() == null) { //퇴직일이 없으면 emploeey EndDate를 당일 날짜로 설정
                 employee.setExitDate(LocalDate.now());
             }
-            employeeRepository.save(employee);
         });
+
+        //userRepository 아이디가 있으면 삭제, 없으면 삭제 안함
+        Optional<AdminUser> data = userRepository.findByUsername(id);
+        if (data.isPresent()) {
+            userRepository.deleteByUsername(id);
+            return optionalEmployee.isPresent();
+        }
         return optionalEmployee.isPresent();
     }
 }

@@ -14,7 +14,11 @@ import lombok.NoArgsConstructor;
         @Column(nullable = false)
         private String name;
         @Column(nullable = false)
-        private String contactInfo;
+        private String managerName; //담당자 이름
+        @Column(nullable = false)
+        private String position; //직급
+        @Column(nullable = false)
+        private String contactInfo; //연락처
         private String log; // 상태 변경 이력 및 메모
 
 

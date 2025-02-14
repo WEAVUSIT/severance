@@ -1,20 +1,20 @@
 package com.weavus.weavusys.enums;
 
-public enum AdmissionStatus {
-   지원중(0),
-    일차합격(1),
-    이차합격(2),
-    내정중(3),
-    내정확정(4),
-    최종합격(5),
-    불합격(6),
-    보류(7);
+public enum WorkScheduleType {
+   출근(0),
+    결근(1),
+    유급휴가(2),
+    대휴(3),
+    특별휴가(4),
+    휴일대체(5),
+    경조휴가(6),
+    휴일출근(7);
 
 
 
    private final int value;
 
-    AdmissionStatus(int value) {
+    WorkScheduleType(int value) {
          this.value = value;
     }
 
@@ -22,8 +22,8 @@ public enum AdmissionStatus {
         return value;
     }
 
-    public static AdmissionStatus fromValue(int value) {
-        for (AdmissionStatus status : AdmissionStatus.values()) {
+    public static WorkScheduleType fromValue(int value) {
+        for (WorkScheduleType status : WorkScheduleType.values()) {
             if (status.getValue() == value) {
                 return status;
             }

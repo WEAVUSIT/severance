@@ -2,6 +2,8 @@ package com.weavus.weavusys.workSchedule.service;
 
 import com.weavus.weavusys.calcul.entity.Employee;
 import com.weavus.weavusys.calcul.repo.EmployeeRepository;
+import com.weavus.weavusys.enums.WorkSchedulePosition;
+import com.weavus.weavusys.enums.WorkScheduleType;
 import com.weavus.weavusys.workSchedule.dto.EmployeeWorkDateDTO;
 import com.weavus.weavusys.workSchedule.dto.WorkScheduleDTO;
 import com.weavus.weavusys.workSchedule.entity.EmployeeWorkDate;
@@ -26,6 +28,8 @@ public class WorkScheduleService {
     private final WorkScheduleRepo workScheduleRepo;
     private final EmployeeRepository employeeRepository;
     private final EmployeeWorkDateRepo employeeWorkDateRepo;
+    String userID = null;
+
     public List<WorkSchedule> getWorkSchedule(String employeeId, int year, int month) {
         return workScheduleRepo.findByEmployeeAndWorkDateBetween(employeeId, year, month);
     }
@@ -33,7 +37,6 @@ public class WorkScheduleService {
     public List<WorkSchedule> getWorkScheduleList() {
         return workScheduleRepo.findAll();
     }
-    String userID = null;
 
 
     public ResponseEntity saveWorkSchedule(WorkScheduleDTO workScheduleDTO) {
@@ -49,9 +52,9 @@ public class WorkScheduleService {
             workSchedule.setBreakTimeIn(workScheduleDTO.getBreakTimeIn());
             workSchedule.setBreakTimeOut(workScheduleDTO.getBreakTimeOut());
             workSchedule.setMemo(workScheduleDTO.getMemo());
-            workSchedule.setWorkType(workScheduleDTO.getWorkType());
+            workSchedule.setWorkType(WorkScheduleType.valueOf(workScheduleDTO.getWorkType()));
             workSchedule.setWorkLocation(workScheduleDTO.getWorkLocation());
-            workSchedule.setWorkPosition(workScheduleDTO.getWorkPosition());
+            workSchedule.setWorkPosition(WorkSchedulePosition.valueOf(workScheduleDTO.getWorkPosition()));
             workScheduleRepo.save(workSchedule);
         } else {
             WorkSchedule workSchedule = WorkSchedule.builder()
@@ -62,11 +65,10 @@ public class WorkScheduleService {
                     .checkOutTime(workScheduleDTO.getCheckOutTime())
                     .breakTimeIn(workScheduleDTO.getBreakTimeIn())
                     .breakTimeOut(workScheduleDTO.getBreakTimeOut())
-                    .isHoliday(workScheduleDTO.getIsHoliday())
                     .memo(workScheduleDTO.getMemo())
-                    .workType(workScheduleDTO.getWorkType())
+                    .workType(WorkScheduleType.valueOf(workScheduleDTO.getWorkType()))
                     .workLocation(workScheduleDTO.getWorkLocation())
-                    .workPosition(workScheduleDTO.getWorkPosition())
+                    .workPosition(WorkSchedulePosition.valueOf(workScheduleDTO.getWorkPosition()))
                     .build();
             workScheduleRepo.save(workSchedule);
         }
@@ -81,7 +83,7 @@ public class WorkScheduleService {
             Map<String, Object> response = new HashMap<>();
             response.put("message", "이미 등록된 기본 근무 정보가 있습니다.");
             response.put("data", employeeWorkDateDTO);
-            ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(response);
         }
 
         EmployeeWorkDate employeeWorkDate = EmployeeWorkDate.builder()
@@ -108,5 +110,52 @@ public class WorkScheduleService {
         Employee employee = employeeRepository.findById(userID)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + userID + "관리자에게 문의해 주세요."));
         return employee;
+    }
+
+    public EmployeeWorkDateDTO getDefaultWorkData() {
+        Employee employee = getEmployeeData();
+        try {
+            EmployeeWorkDate employeeWorkDate = employeeWorkDateRepo.findByEmployeeId(employee.getId());
+            return EmployeeWorkDateDTO.toDTP(employeeWorkDate);
+        } catch (Exception e) {
+            return new EmployeeWorkDateDTO(employee.getName());
+        }
+    }
+
+    public ResponseEntity deleteWorkSchedule(Long id) {
+        try {
+            workScheduleRepo.deleteById(id);
+            return ResponseEntity.ok("WorkSchedule deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("WorkSchedule not found with id: " + id + e);
+        }
+    }
+
+    public ResponseEntity updateDefaultWorkData(EmployeeWorkDateDTO employeeWorkDateDTO) {
+        Employee employee = getEmployeeData();
+
+        if(employeeWorkDateRepo.findByEmployeeId(employee.getId()) == null){
+            EmployeeWorkDate employeeWorkDate = EmployeeWorkDate.builder()
+                    .employee(employee)
+                    .checkInTime(employeeWorkDateDTO.getCheckInTime())
+                    .checkOutTime(employeeWorkDateDTO.getCheckOutTime())
+                    .basicWorkTime(employeeWorkDateDTO.getBasicWorkTime())
+                    .workLocation(employeeWorkDateDTO.getWorkLocation())
+                    .breakTimeIn(employeeWorkDateDTO.getBreakTimeIn())
+                    .breakTimeOut(employeeWorkDateDTO.getBreakTimeOut())
+                    .build();
+            employeeWorkDateRepo.save(employeeWorkDate);
+            return ResponseEntity.ok(employeeWorkDate);
+        } else {
+            EmployeeWorkDate employeeWorkDate = employeeWorkDateRepo.findByEmployeeId(employee.getId());
+            employeeWorkDate.setCheckInTime(employeeWorkDateDTO.getCheckInTime());
+            employeeWorkDate.setCheckOutTime(employeeWorkDateDTO.getCheckOutTime());
+            employeeWorkDate.setBasicWorkTime(employeeWorkDateDTO.getBasicWorkTime());
+            employeeWorkDate.setWorkLocation(employeeWorkDateDTO.getWorkLocation());
+            employeeWorkDate.setBreakTimeIn(employeeWorkDateDTO.getBreakTimeIn());
+            employeeWorkDate.setBreakTimeOut(employeeWorkDateDTO.getBreakTimeOut());
+            employeeWorkDateRepo.save(employeeWorkDate);
+            return ResponseEntity.ok(employeeWorkDateDTO);
+        }
     }
 }

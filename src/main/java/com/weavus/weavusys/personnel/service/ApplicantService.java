@@ -26,8 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -121,7 +122,10 @@ public class ApplicantService {
     Applicant applicant = applicantRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Applicant not found with id: " + id));
 
-    // 파일 저장
+        // 로컬 파일 저장 경로 C:\Data로 설정
+        String uploadDir = "C:/Data";
+
+        // 파일 저장
     for (int i = 0; i < files.size(); i++) {
         MultipartFile file = files.get(i);
         String resumeType = resumeTypes.get(i);
@@ -129,11 +133,19 @@ public class ApplicantService {
                 .ifPresent(applicantFileRepository::delete);
 
         try {
+            String fileName = file.getOriginalFilename();
+            File localFile = new File(uploadDir + File.separator + fileName);
+            Files.createDirectories(Paths.get(uploadDir));  // 디렉토리 생성 (없으면)
+
+            // 파일을 로컬 시스템에 저장
+            file.transferTo(localFile);
+
             ApplicantFile applicantFile = ApplicantFile.builder()
                     .applicant(applicant)
                     .fileName(file.getOriginalFilename())
                     .fileType(file.getContentType())
-                    .fileData(file.getBytes())
+                    .filePath(localFile.getAbsolutePath())  // 파일 경로 저장
+//                    .fileData(file.getBytes())
                     .resumeType(resumeType)
                     .createdAt(LocalDateTime.now())
                     .build();
@@ -155,16 +167,16 @@ public class ApplicantService {
 
         public ResponseEntity<Resource> downloadResumes(Long id) {
             List<ApplicantFile> applicantFiles = applicantFileRepository.findByApplicantId(id);
-
+            Applicant applicantDTO = applicantRepository.findById(id).orElseThrow();
             if (applicantFiles.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
             try {
                 // 임시 ZIP 파일 생성
-                File zipFile = File.createTempFile("지원자이력서", ".zip");
+                File zipFile = File.createTempFile(applicantDTO.getName() + "의 이력서", ".zip");
 
                 // ZIP 파일 암호화
-                String password = "1234";
+                String password = "weavus1234";
                 ZipParameters zipParameters = new ZipParameters();
                 zipParameters.setCompressionMethod(CompressionMethod.DEFLATE);
                 zipParameters.setCompressionLevel(CompressionLevel.NORMAL);
@@ -175,13 +187,18 @@ public class ApplicantService {
                 ZipFile secureZip = new ZipFile(zipFile, password.toCharArray());
                 for (ApplicantFile applicantFile : applicantFiles) {
                     String originalFileName = applicantFile.getFileName(); // 저장된 원래 파일 이름 가져오기
-                    File tempFile = new File(System.getProperty("java.io.tmpdir"), originalFileName); // 원래 이름 사용
-                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                        fos.write(applicantFile.getFileData());
+//                    File tempFile = new File(System.getProperty("java.io.tmpdir"), originalFileName); // 원래 이름 사용
+                    String filePath = applicantFile.getFilePath();
+                    File fileToZip = new File(filePath, originalFileName);
+//                    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+//                        fos.write(applicantFile.getFileData());
+//                          tempFile.delete(); // 임시 파일 삭제
+//                    }
+                    if (fileToZip.exists() && fileToZip.isFile()) {
+                        secureZip.addFile(fileToZip, zipParameters);
                     }
-                    secureZip.addFile(tempFile, zipParameters);
-                    tempFile.delete(); // 임시 파일 삭제
                 }
+
 
                 // ZIP 파일을 클라이언트로 전송
                 Resource resource = new ByteArrayResource(java.nio.file.Files.readAllBytes(zipFile.toPath()));
